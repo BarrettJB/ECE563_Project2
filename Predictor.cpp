@@ -10,7 +10,7 @@
 #include <stdio.h>
 
 //TODO clean up debug messages?
-#define VERBOSE false
+#define VERBOSE true
 
 Predictor::Predictor(unsigned int m, unsigned int n) {
 	unsigned int nSize = 1 << n;
@@ -22,8 +22,17 @@ Predictor::Predictor(unsigned int m, unsigned int n) {
 	mGlobalBits = n;
 	mGlobalMask = nSize - 1;
 	mGShareSize = mSize*nSize;
-	std::cout << "Size: " << mGShareSize << std::endl;
 	mGShare = new unsigned int[mGShareSize];
+
+	if(VERBOSE) {
+
+		std::cout << "Created New Predictor..." << std::endl
+				  << " PCBits: " << mPCBits << std::endl
+				  << " PCMask: " << mPCMask << std::endl
+				  << " GlobalBits: " << mGlobalBits << std::endl
+				  << " GlobalMask: " << mGlobalMask << std::endl
+				  << " GShareSize: " << mGShareSize << std::endl;
+	}
 
 	tCorrect = 0;
 	tWrong = 0;
@@ -34,10 +43,11 @@ Predictor::Predictor(unsigned int m, unsigned int n) {
 
 void Predictor::predict(unsigned long pcAddr, bool taken) {
 	tPredict++;
+	if (VERBOSE) std::cout << std::endl << "Address: " << pcAddr << std::endl;
 	unsigned int index = getIndex(pcAddr);
 
 	if(VERBOSE) std::cout << "Index: " << index << std::endl;
-	if(VERBOSE) std::cout << "Prediction: " << mGShare[index] << std::endl;
+if(VERBOSE) std::cout << "Prediction: " << mGShare[index] << std::endl;
 
 	if (mGShare[index] >= 3)
 	{
@@ -98,10 +108,7 @@ void Predictor::UpdateNotTaken(unsigned int index){
 
 unsigned Predictor::getIndex(unsigned int pcAddr) {
 	unsigned int index = ((pcAddr >> 2) & mPCMask) ^ ((mGlobal & mGlobalMask) << (mPCBits-mGlobalBits));
-	unsigned int val = (pcAddr >> 2) & mPCMask;
-	if (mGlobalBits > 0)
-		val = val * mGlobalBits + (mGlobal & mGlobalMask);
-	return val;
+	return index;
 }
 
 void Predictor::initGShare () {
@@ -111,7 +118,11 @@ void Predictor::initGShare () {
 }
 
 void Predictor::PrintStats(){
-	std::cout << "Total Predictions:    " << tPredict << std::endl;
-	std::cout << "Wrong Predictions:    " << tWrong << std::endl;
-	std::cout << "Correct Predictions:  " << tCorrect << std::endl;
+	float miss_rate = (100.0*tWrong)/tPredict;
+	std::cout << "number of predictions:       " << tPredict << std::endl;
+	std::cout << "number of mispredictions:    " << tWrong << std::endl;
+	std::cout << "misprediction rate:          " << miss_rate << "%" <<std::endl;
+	for(unsigned int i = 0; i < mGShareSize; i++) {
+		std::cout << " " << i << "  " << mGShare[i] << std::endl;
+	}
 }

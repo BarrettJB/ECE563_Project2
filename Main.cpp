@@ -1,7 +1,7 @@
 #include <iostream>
 #include "Predictor.h"
 
-int notmain (int argc, char* argv[])
+int test (int argc, char* argv[])
 {
 	std::cout << "Starting Branch Predictor" << std::endl;
 	Predictor p(2,0);

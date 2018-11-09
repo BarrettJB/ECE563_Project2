@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "sim_bp.h"
+#include "Predictor.h"
 
 /*  argc holds the number of command line arguments
     argv[] holds the commands themselves
@@ -85,18 +86,33 @@ int main (int argc, char* argv[])
         exit(EXIT_FAILURE);
     }
     
+
+    //Create Branch Predictor based on arguments
+    Predictor *bp;
+    if(strcmp(params.bp_name, "bimodal") == 0) {
+    	bp = new Predictor(params.M2, 0);
+    }
+
     char str[2];
+    bool taken = false;
     while(fscanf(FP, "%lx %s", &addr, str) != EOF)
     {
         
         outcome = str[0];
         if (outcome == 't')
-            printf("%lx %s\n", addr, "t");           // Print and test if file is read correctly
+        {
+            //printf("%lx %s\n", addr, "t");           // Print and test if file is read correctly
+        	taken = true;
+        }
         else if (outcome == 'n')
-            printf("%lx %s\n", addr, "n");          // Print and test if file is read correctly
-        /*************************************
-            Add branch predictor code here
-        **************************************/
+        {
+            //printf("%lx %s\n", addr, "n");          // Print and test if file is read correctly
+        	taken = false;
+        }
+
+        bp->predict(addr,taken);
     }
+
+    bp->PrintStats();
     return 0;
 }
