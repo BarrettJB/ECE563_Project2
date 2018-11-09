@@ -97,6 +97,7 @@ void Predictor::UpdateNotTaken(unsigned int index){
 }
 
 unsigned Predictor::getIndex(unsigned int pcAddr) {
+	unsigned int index = ((pcAddr >> 2) & mPCMask) ^ ((mGlobal & mGlobalMask) << (mPCBits-mGlobalBits));
 	unsigned int val = (pcAddr >> 2) & mPCMask;
 	if (mGlobalBits > 0)
 		val = val * mGlobalBits + (mGlobal & mGlobalMask);

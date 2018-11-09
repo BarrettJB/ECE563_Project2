@@ -5,15 +5,18 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../Main.cpp \
-../Predictor.cpp 
+../Predictor.cpp \
+../sim_bp.cpp 
 
 OBJS += \
 ./Main.o \
-./Predictor.o 
+./Predictor.o \
+./sim_bp.o 
 
 CPP_DEPS += \
 ./Main.d \
-./Predictor.d 
+./Predictor.d \
+./sim_bp.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
