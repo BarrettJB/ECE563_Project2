@@ -1,0 +1,5 @@
+COMMAND
+./Debug/Branch_Predictor_Project hybrid 8 14 10 5 Traces\gcc_trace.txt
+number of predictions:       2000000
+number of mispredictions:    207410
+misprediction rate:          10.3705%

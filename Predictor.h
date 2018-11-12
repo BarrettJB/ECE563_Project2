@@ -11,9 +11,12 @@
 class Predictor {
 public:
 	Predictor(unsigned int m, unsigned int n);
-	void predict(unsigned long pcAddr, bool taken);
+	bool predict(unsigned long pcAddr, bool taken);
 	void print_state();
 	void PrintStats();
+	void UpdateTaken(unsigned int index);
+	void UpdateNotTaken(unsigned int index);
+	void UpdateGlobalHistory(bool history);
 
 private:
 	unsigned int* mGShare;
@@ -29,8 +32,6 @@ private:
 	int tWrong;
 	int tPredict;
 
-	void UpdateTaken(unsigned int index);
-	void UpdateNotTaken(unsigned int index);
 	void initGShare();
 	unsigned int shiftGlobal(unsigned int input, bool append);
 	unsigned int getIndex(unsigned int pcAddr);

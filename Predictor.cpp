@@ -8,9 +8,10 @@
 #include "Predictor.h"
 #include <iostream>
 #include <stdio.h>
+#include <algorithm>
 
 //TODO clean up debug messages?
-#define VERBOSE true
+#define VERBOSE false
 
 Predictor::Predictor(unsigned int m, unsigned int n) {
 	unsigned int nSize = 1 << n;
@@ -21,7 +22,7 @@ Predictor::Predictor(unsigned int m, unsigned int n) {
 	mGlobal = 0;
 	mGlobalBits = n;
 	mGlobalMask = nSize - 1;
-	mGShareSize = mSize*nSize;
+	mGShareSize = std::max(mSize,nSize);
 	mGShare = new unsigned int[mGShareSize];
 
 	if(VERBOSE) {
@@ -41,29 +42,28 @@ Predictor::Predictor(unsigned int m, unsigned int n) {
 	initGShare();
 }
 
-void Predictor::predict(unsigned long pcAddr, bool taken) {
+bool Predictor::predict(unsigned long pcAddr, bool taken) {
 	tPredict++;
 	if (VERBOSE) std::cout << std::endl << "Address: " << pcAddr << std::endl;
 	unsigned int index = getIndex(pcAddr);
 
 	if(VERBOSE) std::cout << "Index: " << index << std::endl;
-if(VERBOSE) std::cout << "Prediction: " << mGShare[index] << std::endl;
+    if(VERBOSE) std::cout << "Prediction: " << mGShare[index] << std::endl;
 
-	if (mGShare[index] >= 3)
+	if (mGShare[index] >= 2)
 	{
 		if (taken) {
 			//predicted correctly
 			tCorrect++;
-			UpdateTaken(index);
 			if(VERBOSE) std::cout << "Predicted Taken Correctly" << std::endl;
 		}
 		else
 		{
 			//predicted wrong
 			tWrong++;
-			UpdateNotTaken(index);
 			if(VERBOSE) std::cout << "Predicted Taken Wrongly" << std::endl;
 		}
+		return true;
 	}
 	else
 	{
@@ -71,39 +71,50 @@ if(VERBOSE) std::cout << "Prediction: " << mGShare[index] << std::endl;
 		{
 			//predicted correctly
 			tCorrect++;
-			UpdateNotTaken(index);
 			if(VERBOSE) std::cout << "Predicted Not Taken Correctly" << std::endl;
 		}
 		else
 		{
 			//predicted wrong
 			tWrong++;
-			UpdateTaken(index);
 			if(VERBOSE) std::cout << "Predicted Not Taken Wrongly" << std::endl;
 		}
+		return false;
 	}
 }
 
-void Predictor::UpdateTaken(unsigned int index){
+void Predictor::UpdateTaken(unsigned int addr){
+	unsigned int index = getIndex(addr);
 	//Update Predictor
 	mGShare[index] = mGShare[index] + 1;
 	//Saturation
-	if (mGShare[index] > 4)
-		mGShare[index] = 4;
+	if (mGShare[index] > 3)
+		mGShare[index] = 3;
 
 	//Update global counter
-	mGlobal = (mGlobal << 1) + 1;
+	mGlobal = (mGlobal >> 1) + (1 << (mGlobalBits - 1));
+	if(VERBOSE) std::cout << "Global Counter: " << mGlobal << std::endl;
 }
 
-void Predictor::UpdateNotTaken(unsigned int index){
-	//Update Predictor
+void Predictor::UpdateNotTaken(unsigned int addr){
+	unsigned int index = getIndex(addr);
 	//Saturation
 	if (mGShare[index] == 0)
 		mGShare[index] = 1;
+	//Update Predictor
 	mGShare[index]--;
 
 	//Update global counter
-	mGlobal = (mGlobal << 1) + 0;
+	mGlobal = (mGlobal >> 1) + 0;
+}
+
+void Predictor::UpdateGlobalHistory(bool history) {
+	if(history) {
+		mGlobal = (mGlobal >> 1) + (1 << (mGlobalBits - 1));
+	}
+	else {
+		mGlobal = (mGlobal >> 1) + 0;
+	}
 }
 
 unsigned Predictor::getIndex(unsigned int pcAddr) {
