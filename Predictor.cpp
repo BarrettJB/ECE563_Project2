@@ -117,6 +117,12 @@ void Predictor::UpdateGlobalHistory(bool history) {
 	}
 }
 
+void Predictor::SetChooser() {
+	for(unsigned int i = 0; i < mGShareSize; i++) {
+		mGShare[i] = 1;
+	}
+}
+
 unsigned Predictor::getIndex(unsigned int pcAddr) {
 	unsigned int index = ((pcAddr >> 2) & mPCMask) ^ ((mGlobal & mGlobalMask) << (mPCBits-mGlobalBits));
 	return index;

@@ -5,6 +5,8 @@
 #include "sim_bp.h"
 #include "Predictor.h"
 
+#define VERBOSE false
+
 /*  argc holds the number of command line arguments
     argv[] holds the commands themselves
 
@@ -105,6 +107,7 @@ int main (int argc, char* argv[])
 	}
 	if(strcmp(params.bp_name, "hybrid") == 0) {
 		bp = new Predictor(params.K, 0);
+		bp->SetChooser();
 		bi = new Predictor(params.M2, 0);
 		gs = new Predictor(params.M1, params.N);
 		hybrid = true;
@@ -138,12 +141,14 @@ int main (int argc, char* argv[])
 			//Select the correct predictor and update
 			if(bp->predict(addr,taken))
 			{
+				if(VERBOSE) std::cout << "Selected the GShare Predictor" << std::endl;
 				if(taken) gs->UpdateTaken(addr);
 				else gs->UpdateNotTaken(addr);
 				if (gs_ret != taken) tWrong++;
 			}
 			else
 			{
+				if(VERBOSE) std::cout << "Selected the Bimodal Predictor" << std::endl;
 				if(taken) bi->UpdateTaken(addr);
 				else bi->UpdateNotTaken(addr);
 				gs->UpdateGlobalHistory(taken);
@@ -151,8 +156,16 @@ int main (int argc, char* argv[])
 			}
 
 			//Update hybrid values
-			if ((gs_ret == taken) && (bi_ret != taken)) bp->UpdateTaken(addr);
-			if ((gs_ret != taken) && (bi_ret == taken)) bp->UpdateNotTaken(addr);
+			if ((gs_ret == taken) && (bi_ret != taken))
+			{
+				if(VERBOSE) std::cout << "Biased toward GShare" << std::endl;
+				bp->UpdateTaken(addr);
+			}
+			if ((gs_ret != taken) && (bi_ret == taken))
+			{
+				if(VERBOSE) std::cout << "Biased Toward Bimodal" << std::endl;
+				bp->UpdateNotTaken(addr);
+			}
 		}
 		else
 		{

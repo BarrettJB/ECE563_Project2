@@ -17,6 +17,7 @@ public:
 	void UpdateTaken(unsigned int index);
 	void UpdateNotTaken(unsigned int index);
 	void UpdateGlobalHistory(bool history);
+	void SetChooser();
 
 private:
 	unsigned int* mGShare;
