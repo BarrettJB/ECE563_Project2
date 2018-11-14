@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <iostream>
+#include <iomanip>
 #include "sim_bp.h"
 #include "Predictor.h"
 
@@ -44,7 +45,7 @@ int main (int argc, char* argv[])
 		}
 		params.M2       = strtoul(argv[2], NULL, 10);
 		trace_file      = argv[3];
-		printf("COMMAND\n%s %s %lu %s\n", argv[0], params.bp_name, params.M2, trace_file);
+		printf("COMMAND\n %s %s %lu %s\n", argv[0], params.bp_name, params.M2, trace_file);
 	}
 	else if(strcmp(params.bp_name, "gshare") == 0)          // Gshare
 	{
@@ -56,7 +57,7 @@ int main (int argc, char* argv[])
 		params.M1       = strtoul(argv[2], NULL, 10);
 		params.N        = strtoul(argv[3], NULL, 10);
 		trace_file      = argv[4];
-		printf("COMMAND\n%s %s %lu %lu %s\n", argv[0], params.bp_name, params.M1, params.N, trace_file);
+		printf("COMMAND\n %s %s %lu %lu %s\n", argv[0], params.bp_name, params.M1, params.N, trace_file);
 
 	}
 	else if(strcmp(params.bp_name, "hybrid") == 0)          // Hybrid
@@ -71,7 +72,7 @@ int main (int argc, char* argv[])
 		params.N        = strtoul(argv[4], NULL, 10);
 		params.M2       = strtoul(argv[5], NULL, 10);
 		trace_file      = argv[6];
-		printf("COMMAND\n%s %s %lu %lu %lu %lu %s\n", argv[0], params.bp_name, params.K, params.M1, params.N, params.M2, trace_file);
+		printf("COMMAND\n %s %s %lu %lu %lu %lu %s\n", argv[0], params.bp_name, params.K, params.M1, params.N, params.M2, trace_file);
 
 	}
 	else
@@ -94,15 +95,21 @@ int main (int argc, char* argv[])
 	Predictor *bp;
 	Predictor *bi;
 	Predictor *gs;
+	bool bimodal;
+	bool gshare;
 	bool hybrid;
 	int tWrong;
 	int tPredict;
 	if(strcmp(params.bp_name, "bimodal") == 0) {
 		bp = new Predictor(params.M2, 0);
+		bimodal = true;
+		gshare = false;
 		hybrid = false;
 	}
 	if(strcmp(params.bp_name, "gshare") == 0){
 		bp = new Predictor(params.M1, params.N);
+		bimodal = false;
+		gshare = true;
 		hybrid = false;
 	}
 	if(strcmp(params.bp_name, "hybrid") == 0) {
@@ -110,6 +117,8 @@ int main (int argc, char* argv[])
 		bp->SetChooser();
 		bi = new Predictor(params.M2, 0);
 		gs = new Predictor(params.M1, params.N);
+		bimodal = false;
+		gshare = false;
 		hybrid = true;
 		tWrong = 0;
 		tPredict = 0;
@@ -180,15 +189,35 @@ int main (int argc, char* argv[])
 		}
 
 	}
-
+    std::cout << std::setprecision(4);
+	std::cout << "OUTPUT" << std::endl;
 	if(hybrid) {
 		float miss_rate = (100.0*tWrong)/tPredict;
-		std::cout << "number of predictions:       " << tPredict << std::endl;
-		std::cout << "number of mispredictions:    " << tWrong << std::endl;
-		std::cout << "misprediction rate:          " << miss_rate << "%" <<std::endl;
+		std::cout << " number of predictions:       " << tPredict << std::endl;
+		std::cout << " number of mispredictions:    " << tWrong << std::endl;
+		printf(" misprediction rate:          %2.2f%%\n", miss_rate);
 	}
 	else {
 	    bp->PrintStats();
+	}
+
+	if (bimodal){
+		std::cout << "FINAL BIMODAL CONTENTS" << std::endl;
+		bp->PrintContents();
+	}
+
+	if (gshare){
+		std::cout << "FINAL GSHARE CONTENTS" << std::endl;
+		bp->PrintContents();
+	}
+
+	if (hybrid) {
+		std::cout << "FINAL CHOOSER CONTENTS" << std::endl;
+		bp->PrintContents();
+		std::cout << "FINAL GSHARE CONTENTS" << std::endl;
+	    gs->PrintContents();
+		std::cout << "FINAL BIMODAL CONTENTS" << std::endl;
+		bi->PrintContents();
 	}
 	return 0;
 }

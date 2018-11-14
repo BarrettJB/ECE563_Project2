@@ -136,9 +136,12 @@ void Predictor::initGShare () {
 
 void Predictor::PrintStats(){
 	float miss_rate = (100.0*tWrong)/tPredict;
-	std::cout << "number of predictions:       " << tPredict << std::endl;
-	std::cout << "number of mispredictions:    " << tWrong << std::endl;
-	std::cout << "misprediction rate:          " << miss_rate << "%" <<std::endl;
+	std::cout << " number of predictions:       " << tPredict << std::endl;
+	std::cout << " number of mispredictions:    " << tWrong << std::endl;
+	printf(" misprediction rate:          %2.2f", miss_rate);
+}
+
+void Predictor::PrintContents() {
 	for(unsigned int i = 0; i < mGShareSize; i++) {
 		std::cout << " " << i << "  " << mGShare[i] << std::endl;
 	}

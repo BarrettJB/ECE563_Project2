@@ -14,6 +14,7 @@ public:
 	bool predict(unsigned long pcAddr, bool taken);
 	void print_state();
 	void PrintStats();
+	void PrintContents();
 	void UpdateTaken(unsigned int index);
 	void UpdateNotTaken(unsigned int index);
 	void UpdateGlobalHistory(bool history);
